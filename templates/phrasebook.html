@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data.title }} | VoiceUp Phrasebook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="lesson-header">
+            <a href="/" class="back-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Home
+            </a>
+            <div class="lesson-header-right">
+                <div class="lesson-progress-dots">Phrasebook</div>
+                <div class="user-avatar-sm" title="{{ user.display_name }}">{{ user.display_name[0] | upper }}</div>
+            </div>
+        </header>
+
+        <!-- Section Tabs -->
+        <div class="pb-tabs">
+            <a href="/phrasebook?section=idioms" class="pb-tab {% if section == 'idioms' %}active{% endif %}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Idioms & Phrases
+            </a>
+            <a href="/phrasebook?section=tech" class="pb-tab {% if section == 'tech' %}active{% endif %}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6"/>
+                    <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Tech / SWE
+            </a>
+        </div>
+
+        <!-- Section Hero -->
+        <section class="pb-hero">
+            <h1>{{ data.title }}</h1>
+            <p>{{ data.description }}</p>
+            <div class="pb-hero-stat">
+                {% set ns = namespace(total=0) %}
+                {% for cat in data.categories %}
+                    {% set ns.total = ns.total + cat.phrases|length %}
+                {% endfor %}
+                <span class="stat-number">{{ ns.total }}</span> phrases across <span class="stat-number">{{ data.categories|length }}</span> categories
+            </div>
+        </section>
+
+        <!-- Quick Jump -->
+        <div class="pb-jump">
+            {% for cat in data.categories %}
+            <a href="#cat-{{ loop.index0 }}" class="pb-jump-chip {{ cat.color }}">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+
+        <!-- Categories -->
+        {% for cat in data.categories %}
+        <section class="pb-category" id="cat-{{ loop.index0 }}">
+            <div class="pb-category-header">
+                <h2 class="pb-category-title">
+                    <span class="pb-cat-dot {{ cat.color }}"></span>
+                    {{ cat.name }}
+                </h2>
+                <span class="pb-category-count">{{ cat.phrases|length }} phrases</span>
+            </div>
+
+            <div class="pb-phrases">
+                {% for phrase in cat.phrases %}
+                <div class="pb-card" id="phrase-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}">
+                    <div class="pb-card-header">
+                        <h3 class="pb-phrase">"{{ phrase.phrase }}"</h3>
+                        <button class="btn btn-listen btn-sm" onclick="speakText(this, '{{ phrase.phrase }}. {{ phrase.example | replace("'", "\\'") }}')" title="Listen to pronunciation">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="pb-meaning">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        {{ phrase.meaning }}
+                    </div>
+
+                    <div class="pb-example">
+                        <div class="pb-example-label">Example:</div>
+                        <p>"{{ phrase.example }}"</p>
+                    </div>
+
+                    <div class="pb-usage">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        {{ phrase.usage_note }}
+                    </div>
+
+                    <div class="pb-card-actions">
+                        <button class="btn btn-listen btn-sm" onclick="speakText(this, '{{ phrase.example | replace("'", "\\'") }}')" title="Listen to example">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            </svg>
+                            Listen
+                        </button>
+                        <button class="btn btn-record btn-sm" onclick="toggleRecording(this, 'pb-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}')" title="Practice saying it">
+                            <svg class="mic-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                            <span class="record-label">Practice</span>
+                        </button>
+                        <button class="btn btn-play-recording btn-sm hidden" onclick="playRecording('pb-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}')" title="Play your recording">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                            Play
+                        </button>
+                    </div>
+
+                    <!-- Visualizer for recording -->
+                    <div class="visualizer hidden" id="visualizer-pb-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}">
+                        <div class="visualizer-bars">
+                            <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+                            <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+                            <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+                        </div>
+                        <span class="recording-time">0:00</span>
+                    </div>
+
+                    <!-- Speech recognition result -->
+                    <div class="speech-result hidden" id="result-pb-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}">
+                        <div class="result-header">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            What we heard:
+                        </div>
+                        <p class="result-text"></p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>VoiceUp — Built for non-native speakers who want to communicate with confidence.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate — VoiceUp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="lesson-header">
+            <a href="/" class="back-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Back
+            </a>
+            <div class="user-avatar-sm" title="{{ user.display_name }}">{{ user.display_name[0] | upper }}</div>
+        </header>
+
+        {% if completed >= total %}
+        <!-- Full Certificate -->
+        <div class="certificate-container">
+            <div class="certificate">
+                <div class="cert-border">
+                    <div class="cert-inner">
+                        <div class="cert-seal">
+                            <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="40" cy="40" r="38" stroke="url(#certGrad)" stroke-width="2"/>
+                                <circle cx="40" cy="40" r="32" fill="url(#certGrad)" opacity="0.1"/>
+                                <path d="M40 20L43.5 31.5H55.5L45.8 38.5L49.3 50L40 43L30.7 50L34.2 38.5L24.5 31.5H36.5L40 20Z" fill="url(#certGrad)"/>
+                                <defs>
+                                    <linearGradient id="certGrad" x1="0" y1="0" x2="80" y2="80">
+                                        <stop offset="0%" stop-color="#6366f1"/>
+                                        <stop offset="100%" stop-color="#8b5cf6"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <h4 class="cert-subtitle">Certificate of Completion</h4>
+                        <h2 class="cert-title">Communication Skills Mastery</h2>
+                        <div class="cert-divider"></div>
+                        <p class="cert-recipient">{{ user.display_name }}</p>
+                        <p class="cert-text">has successfully completed the</p>
+                        <h3 class="cert-program">VoiceUp 21-Day Communication Program</h3>
+                        <p class="cert-text">demonstrating proficiency in American English pronunciation, professional communication, public speaking, and interpersonal skills.</p>
+                        <div class="cert-stats">
+                            <div class="cert-stat">
+                                <span class="cert-stat-num">21</span>
+                                <span class="cert-stat-label">Lessons Completed</span>
+                            </div>
+                            <div class="cert-stat">
+                                <span class="cert-stat-num">63</span>
+                                <span class="cert-stat-label">Exercises Practiced</span>
+                            </div>
+                            <div class="cert-stat">
+                                <span class="cert-stat-num">105</span>
+                                <span class="cert-stat-label">Minutes of Practice</span>
+                            </div>
+                        </div>
+                        <div class="cert-date">
+                            <span id="cert-date"></span>
+                        </div>
+                        <div class="cert-footer">
+                            <div class="cert-signature">
+                                <div class="cert-sig-line"></div>
+                                <span>VoiceUp Academy</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-complete" onclick="window.print()" style="margin-top: 2rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                Print Certificate
+            </button>
+        </div>
+
+        {% else %}
+        <!-- Incomplete -->
+        <div class="certificate-incomplete">
+            <div class="incomplete-icon">
+                <svg viewBox="0 0 80 80" fill="none">
+                    <circle cx="40" cy="40" r="38" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="6 4"/>
+                    <path d="M40 20L43.5 31.5H55.5L45.8 38.5L49.3 50L40 43L30.7 50L34.2 38.5L24.5 31.5H36.5L40 20Z" fill="#e5e7eb"/>
+                </svg>
+            </div>
+            <h2>Almost There!</h2>
+            <p>Complete all 21 lessons to earn your Communication Skills Certificate.</p>
+            <div class="incomplete-progress">
+                <div class="progress-bar" style="margin: 1.5rem 0;">
+                    <div class="progress-fill" style="width: {{ (completed / total * 100) | round }}%"></div>
+                </div>
+                <span class="progress-text">{{ completed }} / {{ total }} lessons completed</span>
+            </div>
+            <a href="/" class="btn btn-complete" style="display: inline-flex; text-decoration: none;">
+                Continue Learning
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('cert-date')?.textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+    </script>
+</body>
+</html>
