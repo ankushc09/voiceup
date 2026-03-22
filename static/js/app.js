@@ -273,7 +273,8 @@ function finalizePronunciationFeedback(exerciseIndex, card) {
 }
 
 function hideFeedbackShowInvite(exerciseIndex) {
-    const panel = document.getElementById(`feedback-${exerciseIndex}`);
+    const id = String(exerciseIndex);
+    const panel = document.getElementById(`feedback-${id}`);
     const card = panel && (panel.closest('.exercise-card') || panel.closest('.pb-card'));
     if (panel) {
         panel.classList.add('hidden');
@@ -282,8 +283,18 @@ function hideFeedbackShowInvite(exerciseIndex) {
     if (card) {
         const invite = card.querySelector('.feedback-invite');
         if (invite) invite.classList.remove('hidden');
+        const live = document.getElementById(`result-${id}`);
+        if (live) {
+            live.classList.add('hidden');
+            const rt = live.querySelector('.result-text');
+            if (rt) rt.textContent = '';
+        }
     }
+    speechTranscripts[id] = '';
 }
+
+// Ensure global access for inline onclick handlers
+window.hideFeedbackShowInvite = hideFeedbackShowInvite;
 
 function stopRecognition() {
     if (recognition) {
@@ -455,7 +466,7 @@ function generateNoSpeechApiFeedback(exerciseIndex, card) {
                 <p class="fb-message" style="margin-top:0.5rem">You can still use <strong>Listen</strong> and <strong>Play Back</strong> to compare your recording to the model.</p>
             </div>
         </div>
-        <button type="button" class="btn btn-retry" onclick="hideFeedbackShowInvite(${JSON.stringify(String(exerciseIndex))})">
+        <button type="button" class="btn btn-retry" onclick='hideFeedbackShowInvite(${JSON.stringify(String(exerciseIndex))})'>
             OK
         </button>
     `;
@@ -587,7 +598,7 @@ function generateFeedback(exerciseIndex, spokenText) {
         </div>
         ` : ''}
 
-        <button type="button" class="btn btn-retry" onclick="hideFeedbackShowInvite(${JSON.stringify(String(exerciseIndex))})">
+        <button type="button" class="btn btn-retry" onclick='hideFeedbackShowInvite(${JSON.stringify(String(exerciseIndex))})'>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 4 23 10 17 10"/>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
