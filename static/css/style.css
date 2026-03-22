@@ -1455,6 +1455,225 @@ body {
     font-size: 0.75rem;
 }
 
+/* ========== Feedback Panel ========== */
+
+.feedback-panel {
+    margin-top: 0.75rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    animation: feedbackIn 0.3s ease;
+}
+
+@keyframes feedbackIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fb-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.fb-score-ring {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+}
+
+.fb-score-ring svg {
+    width: 100%;
+    height: 100%;
+}
+
+.fb-score-num {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    line-height: 1;
+}
+
+.fb-score-val {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.fb-score-pct {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fb-summary {
+    flex: 1;
+    min-width: 0;
+}
+
+.fb-grade {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 50px;
+    margin-bottom: 0.3rem;
+}
+
+.fb-grade-excellent { background: #ecfdf5; color: #065f46; }
+.fb-grade-great { background: #eff6ff; color: #1e40af; }
+.fb-grade-good { background: #fef3c7; color: #92400e; }
+.fb-grade-developing { background: #fff7ed; color: #c2410c; }
+.fb-grade-starting { background: #fef2f2; color: #991b1b; }
+
+.fb-message {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: 0.3rem;
+}
+
+.fb-stats {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.fb-stat strong {
+    color: var(--text);
+}
+
+/* Word-by-word results */
+
+.fb-section {
+    margin-bottom: 0.85rem;
+}
+
+.fb-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+}
+
+.fb-section-title svg {
+    color: var(--primary);
+}
+
+.fb-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.4rem;
+}
+
+.fw {
+    display: inline-block;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.fw-match {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #bbf7d0;
+}
+
+.fw-miss {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    text-decoration: line-through;
+    text-decoration-color: #fca5a5;
+}
+
+.fb-legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.fb-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.fb-legend .fw {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.3rem;
+}
+
+.fb-transcript {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary-light);
+}
+
+.fb-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.fb-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.fb-tip svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: var(--warning);
+}
+
+.btn-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition);
+}
+
+.btn-retry:hover {
+    background: #dbeafe;
+}
+
 /* ========== Auth Pages ========== */
 
 .auth-page {

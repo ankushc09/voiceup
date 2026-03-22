@@ -70,7 +70,7 @@
             </h3>
 
             {% for exercise in lesson.exercises %}
-            <div class="exercise-card" data-exercise-index="{{ loop.index0 }}">
+            <div class="exercise-card" data-exercise-index="{{ loop.index0 }}" data-expected-text="{{ exercise.prompt }}">
                 <div class="exercise-header">
                     <span class="exercise-number">Exercise {{ loop.index }}</span>
                     <span class="exercise-type {{ exercise.type }}">
@@ -134,16 +134,19 @@
                     </button>
                 </div>
 
-                <!-- Speech Recognition Result -->
+                <!-- Live transcript (shown during recording) -->
                 <div class="speech-result hidden" id="result-{{ loop.index0 }}">
                     <div class="result-header">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
-                        What we heard:
+                        Listening...
                     </div>
                     <p class="result-text"></p>
                 </div>
+
+                <!-- Feedback Panel (shown after recording stops) -->
+                <div class="feedback-panel hidden" id="feedback-{{ loop.index0 }}"></div>
 
                 <!-- Audio Visualizer -->
                 <div class="visualizer hidden" id="visualizer-{{ loop.index0 }}">

@@ -74,7 +74,7 @@
 
             <div class="pb-phrases">
                 {% for phrase in cat.phrases %}
-                <div class="pb-card" id="phrase-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}">
+                <div class="pb-card" id="phrase-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}" data-expected-text="{{ phrase.example }}">
                     <div class="pb-card-header">
                         <h3 class="pb-phrase">"{{ phrase.phrase }}"</h3>
                         <button class="btn btn-listen btn-sm" onclick="speakText(this, '{{ phrase.phrase }}. {{ phrase.example | replace("'", "\\'") }}')" title="Listen to pronunciation">
@@ -141,16 +141,19 @@
                         <span class="recording-time">0:00</span>
                     </div>
 
-                    <!-- Speech recognition result -->
+                    <!-- Live transcript -->
                     <div class="speech-result hidden" id="result-pb-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}">
                         <div class="result-header">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
-                            What we heard:
+                            Listening...
                         </div>
                         <p class="result-text"></p>
                     </div>
+
+                    <!-- Feedback Panel -->
+                    <div class="feedback-panel hidden" id="feedback-pb-{{ loop.index0 }}-{{ cat.name | replace(' ', '') }}"></div>
                 </div>
                 {% endfor %}
             </div>
