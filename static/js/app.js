@@ -12,6 +12,10 @@ let recognition = null;
 /** Latest transcript per exercise (fixes timing so feedback always shows after Stop) */
 const speechTranscripts = {};
 
+/** Wait for recognition.onend before scoring (500ms was too early — final text arrives later) */
+let pendingFeedbackStop = null;
+let feedbackFallbackTimer = null;
+
 // ========== Text-to-Speech ==========
 
 function speakText(button, text) {
@@ -110,6 +114,11 @@ async function toggleRecording(button, exerciseIndex) {
         if (invite) invite.classList.remove('hidden');
 
         speechTranscripts[exerciseIndex] = '';
+        pendingFeedbackStop = null;
+        if (feedbackFallbackTimer) {
+            clearTimeout(feedbackFallbackTimer);
+            feedbackFallbackTimer = null;
+        }
 
         let seconds = 0;
         const timerEl = card.querySelector('.recording-time');
@@ -146,12 +155,29 @@ function stopRecording(button, exerciseIndex) {
         delete recordingTimers[exerciseIndex];
     }
 
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor || speechTranscripts[exerciseIndex] === '__NO_SPEECH_API__') {
+        finalizePronunciationFeedback(exerciseIndex, card);
+        return;
+    }
+
+    // Final transcript usually arrives AFTER recognition.stop(), in onend — not after a fixed delay
+    pendingFeedbackStop = { exerciseIndex, card };
+    if (feedbackFallbackTimer) {
+        clearTimeout(feedbackFallbackTimer);
+        feedbackFallbackTimer = null;
+    }
+
     stopRecognition();
 
-    // Always show feedback after Stop — recognition may finish slightly after stop()
-    setTimeout(() => {
-        finalizePronunciationFeedback(exerciseIndex, card);
-    }, 500);
+    // Fallback if onend never fires (rare browser quirks)
+    feedbackFallbackTimer = setTimeout(() => {
+        if (pendingFeedbackStop && pendingFeedbackStop.exerciseIndex === exerciseIndex) {
+            pendingFeedbackStop = null;
+            finalizePronunciationFeedback(exerciseIndex, card);
+        }
+        feedbackFallbackTimer = null;
+    }, 2800);
 }
 
 // ========== Play Recording ==========
@@ -202,6 +228,21 @@ function startRecognition(exerciseIndex) {
         }
         if (event.error !== 'no-speech' && event.error !== 'aborted') {
             console.log('Speech recognition note:', event.error);
+        }
+    };
+
+    recognition.onend = () => {
+        if (pendingFeedbackStop && pendingFeedbackStop.exerciseIndex === exerciseIndex) {
+            if (feedbackFallbackTimer) {
+                clearTimeout(feedbackFallbackTimer);
+                feedbackFallbackTimer = null;
+            }
+            const p = pendingFeedbackStop;
+            pendingFeedbackStop = null;
+            // Let the browser flush any last onresult events before we read speechTranscripts
+            setTimeout(() => {
+                finalizePronunciationFeedback(p.exerciseIndex, p.card);
+            }, 80);
         }
     };
 
@@ -529,7 +570,7 @@ function generateFeedback(exerciseIndex, spokenText) {
                 </svg>
                 What We Heard
             </div>
-            <p class="fb-transcript">"${escapeHtml(spokenText) || '(nothing detected — speak closer to the mic or try again)'}"</p>
+            <p class="fb-transcript">"${escapeHtml(spokenText) || '(No words detected yet — speak a bit longer before tapping Stop, move closer to the mic, or reduce background noise.)'}"</p>
         </div>
 
         ${analysis.tips.length > 0 ? `
