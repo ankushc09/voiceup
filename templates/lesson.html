@@ -105,6 +105,20 @@
                     {{ exercise.focus if exercise.focus is defined else exercise.tip }}
                 </div>
 
+                <!-- How scoring works (always visible until first result) -->
+                <div class="feedback-invite" id="invite-{{ loop.index0 }}">
+                    <div class="feedback-invite-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <div class="feedback-invite-text">
+                        <strong>How do I know if I pronounced it correctly?</strong>
+                        <p>Tap <b>Record</b>, say the sentence out loud, then tap <b>Stop</b>. You’ll get a <b>score %</b>, <b>green/red word highlights</b>, and <b>tips</b> — powered by your browser’s speech recognition (works best in Chrome or Edge).</p>
+                    </div>
+                </div>
+
                 <!-- Text-to-Speech Button -->
                 <div class="exercise-controls">
                     <button class="btn btn-listen" onclick="speakText(this, `{{ exercise.prompt | replace('`', '') }}`)" title="Listen to pronunciation">
@@ -145,8 +159,8 @@
                     <p class="result-text"></p>
                 </div>
 
-                <!-- Feedback Panel (shown after recording stops) -->
-                <div class="feedback-panel hidden" id="feedback-{{ loop.index0 }}"></div>
+                <!-- Feedback Panel (filled by JavaScript after you tap Stop) -->
+                <div class="feedback-panel hidden" id="feedback-{{ loop.index0 }}" aria-live="polite"></div>
 
                 <!-- Audio Visualizer -->
                 <div class="visualizer hidden" id="visualizer-{{ loop.index0 }}">

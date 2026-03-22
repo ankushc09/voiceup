@@ -191,6 +191,27 @@ body {
     max-width: 480px;
 }
 
+.hero-tip {
+    margin-top: 1rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    opacity: 0.95;
+    max-width: 480px;
+}
+
+.hero-tip strong {
+    display: block;
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.hero-tip b {
+    font-weight: 700;
+}
+
 .hero-stats {
     display: flex;
     gap: 2rem;
@@ -1453,6 +1474,54 @@ body {
 .btn-sm {
     padding: 0.4rem 0.7rem;
     font-size: 0.75rem;
+}
+
+/* ========== Pronunciation invite (always visible until first score) ========== */
+
+.feedback-invite {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius-sm);
+}
+
+.pb-card .feedback-invite {
+    margin-top: 0.35rem;
+}
+
+.feedback-invite-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.feedback-invite-text strong {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.feedback-invite-text p {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.feedback-invite-text b {
+    color: var(--primary-dark);
 }
 
 /* ========== Feedback Panel ========== */

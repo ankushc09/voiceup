@@ -9,6 +9,9 @@ let recordings = {};
 let recordingTimers = {};
 let recognition = null;
 
+/** Latest transcript per exercise (fixes timing so feedback always shows after Stop) */
+const speechTranscripts = {};
+
 // ========== Text-to-Speech ==========
 
 function speakText(button, text) {
@@ -97,9 +100,16 @@ async function toggleRecording(button, exerciseIndex) {
         const visualizer = document.getElementById(`visualizer-${exerciseIndex}`) || card.querySelector('.visualizer');
         if (visualizer) visualizer.classList.remove('hidden');
 
-        // Hide previous feedback
+        // Hide previous feedback; show "how to" hint again until new results
         const feedback = card.querySelector('.feedback-panel');
-        if (feedback) feedback.classList.add('hidden');
+        if (feedback) {
+            feedback.classList.add('hidden');
+            feedback.innerHTML = '';
+        }
+        const invite = card.querySelector('.feedback-invite');
+        if (invite) invite.classList.remove('hidden');
+
+        speechTranscripts[exerciseIndex] = '';
 
         let seconds = 0;
         const timerEl = card.querySelector('.recording-time');
@@ -128,7 +138,7 @@ function stopRecording(button, exerciseIndex) {
     label.textContent = label._original || 'Record';
 
     const card = button.closest('.exercise-card') || button.closest('.pb-card');
-    const visualizer = document.getElementById(`visualizer-${exerciseIndex}`) || card.querySelector('.visualizer');
+    const visualizer = document.getElementById(`visualizer-${exerciseIndex}`) || card?.querySelector('.visualizer');
     if (visualizer) visualizer.classList.add('hidden');
 
     if (recordingTimers[exerciseIndex]) {
@@ -137,6 +147,11 @@ function stopRecording(button, exerciseIndex) {
     }
 
     stopRecognition();
+
+    // Always show feedback after Stop — recognition may finish slightly after stop()
+    setTimeout(() => {
+        finalizePronunciationFeedback(exerciseIndex, card);
+    }, 500);
 }
 
 // ========== Play Recording ==========
@@ -153,33 +168,38 @@ function playRecording(exerciseIndex) {
 
 function startRecognition(exerciseIndex) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    if (!SpeechRecognition) {
+        speechTranscripts[exerciseIndex] = '__NO_SPEECH_API__';
+        return;
+    }
 
     recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.continuous = true;
     recognition.maxAlternatives = 1;
 
     let fullTranscript = '';
 
     recognition.onresult = (event) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-                fullTranscript += event.results[i][0].transcript + ' ';
+        let interim = '';
+        for (let i = 0; i < event.results.length; i++) {
+            const r = event.results[i];
+            if (r.isFinal) {
+                fullTranscript += r[0].transcript + ' ';
+            } else {
+                interim += r[0].transcript;
             }
         }
-
-        showLiveTranscript(exerciseIndex, fullTranscript.trim());
-    };
-
-    recognition.onend = () => {
-        if (fullTranscript.trim()) {
-            generateFeedback(exerciseIndex, fullTranscript.trim());
-        }
+        const live = (fullTranscript + interim).trim();
+        speechTranscripts[exerciseIndex] = live;
+        showLiveTranscript(exerciseIndex, live);
     };
 
     recognition.onerror = (event) => {
+        if (event.error === 'no-speech') {
+            speechTranscripts[exerciseIndex] = speechTranscripts[exerciseIndex] || '';
+        }
         if (event.error !== 'no-speech' && event.error !== 'aborted') {
             console.log('Speech recognition note:', event.error);
         }
@@ -188,7 +208,39 @@ function startRecognition(exerciseIndex) {
     try {
         recognition.start();
     } catch (e) {
-        // Recognition might already be running
+        speechTranscripts[exerciseIndex] = '__NO_SPEECH_API__';
+    }
+}
+
+/** Called after recording stops — always shows a feedback panel */
+function finalizePronunciationFeedback(exerciseIndex, card) {
+    let c = card;
+    if (!c) {
+        const panel = document.getElementById(`feedback-${exerciseIndex}`);
+        c = panel && (panel.closest('.exercise-card') || panel.closest('.pb-card'));
+    }
+    const raw = speechTranscripts[exerciseIndex];
+    if (raw === '__NO_SPEECH_API__') {
+        generateNoSpeechApiFeedback(exerciseIndex, c);
+        return;
+    }
+    const spoken = typeof raw === 'string' ? raw : '';
+    generateFeedback(exerciseIndex, spoken);
+
+    const invite = c && c.querySelector('.feedback-invite');
+    if (invite) invite.classList.add('hidden');
+}
+
+function hideFeedbackShowInvite(exerciseIndex) {
+    const panel = document.getElementById(`feedback-${exerciseIndex}`);
+    const card = panel && (panel.closest('.exercise-card') || panel.closest('.pb-card'));
+    if (panel) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+    }
+    if (card) {
+        const invite = card.querySelector('.feedback-invite');
+        if (invite) invite.classList.remove('hidden');
     }
 }
 
@@ -344,6 +396,39 @@ function analyzePronunciation(expected, spoken) {
     };
 }
 
+function generateNoSpeechApiFeedback(exerciseIndex, card) {
+    const feedbackPanel = document.getElementById(`feedback-${exerciseIndex}`);
+    if (!feedbackPanel) return;
+
+    feedbackPanel.innerHTML = `
+        <div class="fb-header">
+            <div class="fb-score-ring">
+                <svg viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="36" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                </svg>
+                <div class="fb-score-num"><span class="fb-score-val">—</span></div>
+            </div>
+            <div class="fb-summary">
+                <span class="fb-grade fb-grade-developing">Live scoring unavailable</span>
+                <p class="fb-message">This browser doesn’t support speech recognition for automatic scoring. Use <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> on desktop or Android for word-by-word feedback.</p>
+                <p class="fb-message" style="margin-top:0.5rem">You can still use <strong>Listen</strong> and <strong>Play Back</strong> to compare your recording to the model.</p>
+            </div>
+        </div>
+        <button type="button" class="btn btn-retry" onclick="hideFeedbackShowInvite(${JSON.stringify(String(exerciseIndex))})">
+            OK
+        </button>
+    `;
+    feedbackPanel.classList.remove('hidden');
+    feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
 function generateFeedback(exerciseIndex, spokenText) {
     const feedbackPanel = document.getElementById(`feedback-${exerciseIndex}`);
     if (!feedbackPanel) return;
@@ -444,7 +529,7 @@ function generateFeedback(exerciseIndex, spokenText) {
                 </svg>
                 What We Heard
             </div>
-            <p class="fb-transcript">"${spokenText}"</p>
+            <p class="fb-transcript">"${escapeHtml(spokenText) || '(nothing detected — speak closer to the mic or try again)'}"</p>
         </div>
 
         ${analysis.tips.length > 0 ? `
@@ -461,7 +546,7 @@ function generateFeedback(exerciseIndex, spokenText) {
         </div>
         ` : ''}
 
-        <button class="btn btn-retry" onclick="this.closest('.feedback-panel').classList.add('hidden')">
+        <button type="button" class="btn btn-retry" onclick="hideFeedbackShowInvite(${JSON.stringify(String(exerciseIndex))})">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 4 23 10 17 10"/>
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
